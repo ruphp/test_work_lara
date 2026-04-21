@@ -1,19 +1,50 @@
 name: testworklara
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: testworklara_app
-    container_name: testworklara_app
-    working_dir: /var/www/html
-    volumes:
-      - ./:/var/www/html
-    ports:
-      - "8090:8000"
-    environment:
-      APP_ENV: local
-      APP_DEBUG: "true"
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /var/www/html/database/database.sqlite
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: testworklara_app
+        container_name: testworklara_app
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+            - testworklara_vendor:/var/www/html/vendor
+        ports:
+            - "8090:8000"
+        environment:
+            APP_ENV: local
+            APP_DEBUG: "true"
+            DB_CONNECTION: pgsql
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_DATABASE: testworklara
+            DB_USERNAME: testworklara
+            DB_PASSWORD: testworklara
+        depends_on:
+            db:
+                condition: service_healthy
+
+    db:
+        image: postgres:17-alpine
+        container_name: testworklara_db
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_DB: testworklara
+            POSTGRES_USER: testworklara
+            POSTGRES_PASSWORD: testworklara
+        volumes:
+            - testworklara_pgdata:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U testworklara -d testworklara"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+volumes:
+    testworklara_pgdata:
+        name: testworklara_pgdata
+    testworklara_vendor:
+        name: testworklara_vendor
