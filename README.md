@@ -28,10 +28,13 @@
 
 
 ## локальный деплой
+
 ```
+Copy-Item .env.example .env // заполнить подключение к бд
 docker compose build
 docker compose run --rm app composer install
 docker compose run --rm app php artisan key:generate
 docker compose run --rm app php artisan migrate:fresh --seed
 docker compose up -d
+
 ```
